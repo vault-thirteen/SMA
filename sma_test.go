@@ -29,32 +29,35 @@ func Test_New(t *testing.T) {
 	aTest.MustBeEqual(calculator.previousValue, (*float64)(nil))
 }
 
-func Test_getItemsAverage(t *testing.T) {
+func Test_IsCold(t *testing.T) {
 	aTest := tester.New(t)
 
 	var (
 		calculator *Calculator
-		average    ValueType
 		err        error
 	)
 
 	calculator, err = New(3)
 	aTest.MustBeNoError(err)
 
-	calculator.items.PushFront(ValueType(1.0))
-	calculator.items.PushFront(ValueType(2.0))
+	// Test #0. No items.
+	aTest.MustBeEqual(true, calculator.IsCold())
 
-	// Test #1. Not enough Data.
-	average, err = calculator.getItemsAverage()
-	aTest.MustBeAnError(err)
-	aTest.MustBeEqual(average, ValueType(0))
+	// Test #1. One item.
+	calculator.items.PushFront(ValueType(1))
+	aTest.MustBeEqual(true, calculator.IsCold())
 
-	// Test #2. OK.
-	calculator.items.PushFront(ValueType(12.0))
+	// Test #2. Two items.
+	calculator.items.PushFront(ValueType(2))
+	aTest.MustBeEqual(true, calculator.IsCold())
 
-	average, err = calculator.getItemsAverage()
-	aTest.MustBeNoError(err)
-	aTest.MustBeEqual(average, ValueType(5))
+	// Test #3. Three items.
+	calculator.items.PushFront(ValueType(3))
+	aTest.MustBeEqual(false, calculator.IsCold())
+
+	// Test #4. Four items.
+	calculator.items.PushFront(ValueType(4))
+	aTest.MustBeEqual(false, calculator.IsCold())
 }
 
 func Test_AddItemAndGetSMA(t *testing.T) {
@@ -95,4 +98,32 @@ func Test_AddItemAndGetSMA(t *testing.T) {
 	sma, err = calculator.AddItemAndGetSMA(ValueType(5))
 	aTest.MustBeAnError(err)
 	aTest.MustBeEqual(sma, ValueType(0))
+}
+
+func Test_getItemsAverage(t *testing.T) {
+	aTest := tester.New(t)
+
+	var (
+		calculator *Calculator
+		average    ValueType
+		err        error
+	)
+
+	calculator, err = New(3)
+	aTest.MustBeNoError(err)
+
+	calculator.items.PushFront(ValueType(1.0))
+	calculator.items.PushFront(ValueType(2.0))
+
+	// Test #1. Not enough Data.
+	average, err = calculator.getItemsAverage()
+	aTest.MustBeAnError(err)
+	aTest.MustBeEqual(average, ValueType(0))
+
+	// Test #2. OK.
+	calculator.items.PushFront(ValueType(12.0))
+
+	average, err = calculator.getItemsAverage()
+	aTest.MustBeNoError(err)
+	aTest.MustBeEqual(average, ValueType(5))
 }
